@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,8 +43,12 @@ public class PriceByDateController {
   }
 
   @PostMapping("/pricesByDate")
-  PriceByDate newPriceByDate(@RequestBody PriceByDate newPriceByDate) {
-    return repository.save(newPriceByDate);
+  ResponseEntity<?> newPriceByDate(@RequestBody PriceByDate newPriceByDate) {
+    EntityModel<PriceByDate> entityModel = assembler.toModel(repository.save(newPriceByDate));
+
+    return ResponseEntity //
+        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
+        .body(entityModel);
   }
 
   @GetMapping("/pricesByDate/{id}")
@@ -54,8 +60,8 @@ public class PriceByDateController {
   }
 
   @PutMapping("/pricesByDate/{id}")
-  PriceByDate replacePriceByDate(@RequestBody PriceByDate newPriceByDate, @PathVariable Long id) {
-    return repository.findById(id)
+  ResponseEntity<?> replacePriceByDate(@RequestBody PriceByDate newPriceByDate, @PathVariable Long id) {
+    PriceByDate updatedPriceByDate = repository.findById(id) //
         .map(priceByDate -> {
           priceByDate.setBrandId(newPriceByDate.getBrandId());
           priceByDate.setStartDate(newPriceByDate.getStartDate());
@@ -72,10 +78,17 @@ public class PriceByDateController {
           newPriceByDate.setId(id);
           return repository.save(newPriceByDate);
         });
+
+    EntityModel<PriceByDate> entityModel = assembler.toModel(updatedPriceByDate);
+
+    return ResponseEntity //
+        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
+        .body(entityModel);
   }
 
   @DeleteMapping("/pricesByDate/{id}")
-  void deletePriceByDate(@PathVariable Long id) {
+  ResponseEntity<?> deletePriceByDate(@PathVariable Long id) {
     repository.deleteById(id);
+    return ResponseEntity.noContent().build();
   }
 }

@@ -3,8 +3,10 @@ package com.prueba.tecnica.inditex.controller;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import com.prueba.tecnica.inditex.pricebydate.PriceByDate;
-import com.prueba.tecnica.inditex.pricebydate.PriceByDateRepository;
+import com.prueba.tecnica.inditex.model.PriceByDate;
+import com.prueba.tecnica.inditex.repository.PriceByDateRepository;
+import com.prueba.tecnica.inditex.service.IPriceByDateService;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.hateoas.CollectionModel;
@@ -17,6 +19,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,9 +31,12 @@ public class PriceByDateController {
 
   private final PriceByDateModelAssembler assembler;
 
-  PriceByDateController(PriceByDateRepository repository, PriceByDateModelAssembler assembler) {
+  private final IPriceByDateService priceByDateService;
+
+  PriceByDateController(PriceByDateRepository repository, PriceByDateModelAssembler assembler, IPriceByDateService priceByDateService) {
     this.repository = repository;
     this.assembler = assembler;
+    this.priceByDateService = priceByDateService;
   }
 
   @GetMapping("/pricesByDate")
@@ -56,6 +64,12 @@ public class PriceByDateController {
     PriceByDate priceByDate = repository.findById(id)
         .orElseThrow(() -> new PriceByDateNotFoundException(id));
 
+    return assembler.toModel(priceByDate);
+  }
+
+  @RequestMapping(value="/priceByDateProductAndBrand", method = RequestMethod.GET)
+  EntityModel<PriceByDate> getPriceByDateProductAndBrand(@RequestParam Date date, @RequestParam Long productId, @RequestParam Integer brandId) {
+    PriceByDate priceByDate = priceByDateService.getPriceByDateProductAndBrand(date, productId, brandId);
     return assembler.toModel(priceByDate);
   }
 

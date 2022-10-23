@@ -1,4 +1,4 @@
-package com.prueba.tecnica.inditex.pricebydate;
+package com.prueba.tecnica.inditex.model;
 
 import java.util.Date;
 import javax.persistence.Entity;

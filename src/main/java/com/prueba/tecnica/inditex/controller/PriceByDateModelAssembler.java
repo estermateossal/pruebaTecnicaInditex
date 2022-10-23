@@ -3,7 +3,7 @@ package com.prueba.tecnica.inditex.controller;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import com.prueba.tecnica.inditex.pricebydate.PriceByDate;
+import com.prueba.tecnica.inditex.model.PriceByDate;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;

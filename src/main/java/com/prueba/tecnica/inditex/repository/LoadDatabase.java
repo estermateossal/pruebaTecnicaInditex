@@ -1,5 +1,6 @@
-package com.prueba.tecnica.inditex.pricebydate;
+package com.prueba.tecnica.inditex.repository;
 
+import com.prueba.tecnica.inditex.model.PriceByDate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

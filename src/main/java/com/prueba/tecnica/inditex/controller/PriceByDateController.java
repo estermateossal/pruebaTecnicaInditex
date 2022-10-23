@@ -1,9 +1,14 @@
 package com.prueba.tecnica.inditex.controller;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import com.prueba.tecnica.inditex.pricebydate.PriceByDate;
 import com.prueba.tecnica.inditex.pricebydate.PriceByDateRepository;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,13 +22,22 @@ public class PriceByDateController {
 
   private final PriceByDateRepository repository;
 
-  PriceByDateController(PriceByDateRepository repository) {
+  private final PriceByDateModelAssembler assembler;
+
+  PriceByDateController(PriceByDateRepository repository, PriceByDateModelAssembler assembler) {
     this.repository = repository;
+    this.assembler = assembler;
   }
 
   @GetMapping("/pricesByDate")
-  List<PriceByDate> all() {
-    return repository.findAll();
+  CollectionModel<EntityModel<PriceByDate>> all() {
+    List<EntityModel<PriceByDate>> pricesByDate = repository.findAll()
+        .stream()
+        .map(assembler::toModel)
+        .collect(Collectors.toList());
+
+    return CollectionModel.of(
+        pricesByDate, linkTo(methodOn(PriceByDateController.class).all()).withSelfRel());
   }
 
   @PostMapping("/pricesByDate")
@@ -32,9 +46,11 @@ public class PriceByDateController {
   }
 
   @GetMapping("/pricesByDate/{id}")
-  PriceByDate one(@PathVariable Long id) {
-    return repository.findById(id)
+  EntityModel<PriceByDate> one(@PathVariable Long id) {
+    PriceByDate priceByDate = repository.findById(id)
         .orElseThrow(() -> new PriceByDateNotFoundException(id));
+
+    return assembler.toModel(priceByDate);
   }
 
   @PutMapping("/pricesByDate/{id}")

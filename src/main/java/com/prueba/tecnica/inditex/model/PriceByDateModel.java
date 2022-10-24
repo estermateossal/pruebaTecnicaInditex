@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +20,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class PriceByDate {
+@Table(name = "Prices")
+public class PriceByDateModel {
 
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -27,20 +29,9 @@ public class PriceByDate {
   private Date startDate;
   private Date endDate;
   private Integer priceList;
-  private Long productId;
-  private Boolean priority;
+  private Integer productId;
+  private Integer priority;
   private Double price;
   private String curr;
-
-  PriceByDate(Integer brandId, Date startDate, Date endDate, Integer priceList, Long productId, Boolean priority, Double price, String curr) {
-    this.brandId = brandId;
-    this.startDate = startDate;
-    this.endDate = endDate;
-    this.priceList = priceList;
-    this.productId = productId;
-    this.priority = priority;
-    this.price = price;
-    this.curr = curr;
-  }
 
 }

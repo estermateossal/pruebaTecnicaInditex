@@ -9,7 +9,7 @@ import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PriceByDateModelAssembler
+public class PriceByDateDTOAssembler
     implements
     RepresentationModelAssembler<PriceByDateDTO, EntityModel<PriceByDateDTO>> {
 

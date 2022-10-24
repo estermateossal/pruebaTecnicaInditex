@@ -3,10 +3,13 @@ package com.prueba.tecnica.inditex.controller;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import com.prueba.tecnica.inditex.model.PriceByDate;
-import com.prueba.tecnica.inditex.repository.PriceByDateRepository;
+import com.prueba.tecnica.inditex.controller.request.PriceByDateRequest;
+import com.prueba.tecnica.inditex.dto.PriceByDateDTO;
+import com.prueba.tecnica.inditex.dto.mapper.PriceByDateDTOMapper;
+import com.prueba.tecnica.inditex.model.PriceByDateModel;
+import com.prueba.tecnica.inditex.model.mapper.PriceByDateModelMapper;
 import com.prueba.tecnica.inditex.service.IPriceByDateService;
-import java.util.Date;
+import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.hateoas.CollectionModel;
@@ -19,31 +22,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class PriceByDateController {
 
-  private final PriceByDateRepository repository;
+  private final IPriceByDateService service;
+  private final PriceByDateDTOAssembler assembler;
+  private final PriceByDateDTOMapper requestMapper;
+  private final PriceByDateModelMapper modelMapper;
 
-  private final PriceByDateModelAssembler assembler;
-
-  private final IPriceByDateService priceByDateService;
-
-  PriceByDateController(PriceByDateRepository repository, PriceByDateModelAssembler assembler, IPriceByDateService priceByDateService) {
-    this.repository = repository;
+  public PriceByDateController(final PriceByDateDTOAssembler assembler, final PriceByDateDTOMapper requestMapper,
+      final IPriceByDateService service, final PriceByDateModelMapper modelMapper) {
+    this.service = service;
     this.assembler = assembler;
-    this.priceByDateService = priceByDateService;
+    this.modelMapper = modelMapper;
+    this.requestMapper = requestMapper;
   }
 
   @GetMapping("/pricesByDate")
-  CollectionModel<EntityModel<PriceByDate>> all() {
-    List<EntityModel<PriceByDate>> pricesByDate = repository.findAll()
+  CollectionModel<EntityModel<PriceByDateDTO>> all() {
+    List<EntityModel<PriceByDateDTO>> pricesByDate = service.getAllPriceByDateRecord()
         .stream()
-        .map(assembler::toModel)
+        .map(x -> assembler.toModel(modelMapper.mapModelToDTO(x)))
         .collect(Collectors.toList());
 
     return CollectionModel.of(
@@ -51,58 +53,52 @@ public class PriceByDateController {
   }
 
   @PostMapping("/pricesByDate")
-  ResponseEntity<?> newPriceByDate(@RequestBody PriceByDate newPriceByDate) {
-    EntityModel<PriceByDate> entityModel = assembler.toModel(repository.save(newPriceByDate));
+  ResponseEntity<EntityModel<PriceByDateDTO>> postPriceByDate(@RequestBody PriceByDateRequest request) {
+    PriceByDateModel price = service.createPriceByDateRecord(requestMapper.mapRequestToDTO(request));
+    EntityModel<PriceByDateDTO> entityModel = assembler.toModel(modelMapper.mapModelToDTO(price));
 
-    return ResponseEntity //
-        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
+    return ResponseEntity
+        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
         .body(entityModel);
   }
 
   @GetMapping("/pricesByDate/{id}")
-  EntityModel<PriceByDate> one(@PathVariable Long id) {
-    PriceByDate priceByDate = repository.findById(id)
+  EntityModel<PriceByDateDTO> one(@PathVariable Long id) {
+    PriceByDateModel priceByDateModel = service.getPriceByDateRecord(id)
         .orElseThrow(() -> new PriceByDateNotFoundException(id));
 
-    return assembler.toModel(priceByDate);
+    return assembler.toModel(modelMapper.mapModelToDTO(priceByDateModel));
   }
 
-  @RequestMapping(value="/priceByDateProductAndBrand", method = RequestMethod.GET)
-  EntityModel<PriceByDate> getPriceByDateProductAndBrand(@RequestParam Date date, @RequestParam Long productId, @RequestParam Integer brandId) {
-    PriceByDate priceByDate = priceByDateService.getPriceByDateProductAndBrand(date, productId, brandId);
-    return assembler.toModel(priceByDate);
+  @GetMapping(value="/priceByDateProductAndBrand")
+  EntityModel<PriceByDateDTO> getPriceByDateProductAndBrand(@RequestParam String date, @RequestParam Integer productId, @RequestParam Integer brandId) {
+    PriceByDateModel priceByDate = null;
+    try {
+      priceByDate = service.getPriceByDateProductAndBrand(date, productId, brandId)
+          .orElseThrow(() -> new PriceByDateNotFoundException(date, productId, brandId));
+
+      return assembler.toModel(modelMapper.mapModelToDTO(priceByDate));
+    } catch (ParseException e) {
+      return assembler.toModel(null); //TODO change response exception
+    }
   }
 
   @PutMapping("/pricesByDate/{id}")
-  ResponseEntity<?> replacePriceByDate(@RequestBody PriceByDate newPriceByDate, @PathVariable Long id) {
-    PriceByDate updatedPriceByDate = repository.findById(id) //
-        .map(priceByDate -> {
-          priceByDate.setBrandId(newPriceByDate.getBrandId());
-          priceByDate.setStartDate(newPriceByDate.getStartDate());
-          priceByDate.setEndDate(newPriceByDate.getEndDate());
-          priceByDate.setPriceList(newPriceByDate.getPriceList());
-          priceByDate.setProductId(newPriceByDate.getProductId());
-          priceByDate.setPriority(newPriceByDate.getPriority());
-          priceByDate.setPrice(newPriceByDate.getPrice());
-          priceByDate.setCurr(newPriceByDate.getCurr());
+  ResponseEntity<EntityModel<PriceByDateDTO>> replacePriceByDate(@RequestBody PriceByDateRequest request, @PathVariable Long id) {
+    PriceByDateModel updatedPriceByDateModel = service.replacePriceByDate(requestMapper.mapRequestToDTO(request), id);
+    
+    EntityModel<PriceByDateDTO> entityModel = assembler
+        .toModel(modelMapper.mapModelToDTO(updatedPriceByDateModel));
 
-          return repository.save(priceByDate);
-        })
-        .orElseGet(() -> {
-          newPriceByDate.setId(id);
-          return repository.save(newPriceByDate);
-        });
-
-    EntityModel<PriceByDate> entityModel = assembler.toModel(updatedPriceByDate);
-
-    return ResponseEntity //
-        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
+    return ResponseEntity
+        .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
         .body(entityModel);
   }
 
   @DeleteMapping("/pricesByDate/{id}")
-  ResponseEntity<?> deletePriceByDate(@PathVariable Long id) {
-    repository.deleteById(id);
+  ResponseEntity<EntityModel<PriceByDateDTO>> deletePriceByDate(@PathVariable Long id) {
+    service.deletePriceByDate(id);
     return ResponseEntity.noContent().build();
   }
+
 }

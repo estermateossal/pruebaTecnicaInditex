@@ -1,11 +1,20 @@
 package com.prueba.tecnica.inditex.repository;
 
-import com.prueba.tecnica.inditex.model.PriceByDate;
+import com.prueba.tecnica.inditex.model.PriceByDateModel;
+import java.util.Date;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-public interface PriceByDateRepository extends JpaRepository<PriceByDate, Long> {
+@Repository
+public interface PriceByDateRepository extends JpaRepository<PriceByDateModel, Long> {
 
-  List<PriceByDate> findByProductIdAndBrandId(Long productId, Integer brand);
+  @Query(value = "SELECT * "
+      + "FROM prices "
+      + "WHERE product_id = :productId AND brand_id = :brandId AND start_date < :date AND :date < end_date",
+      nativeQuery = true)
+  List<PriceByDateModel> findPrice(@Param("productId") Integer productId, @Param("brandId") Integer brand, @Param("date") Date date);
 
 }

@@ -1,0 +1,1 @@
+{"id":3,"brandId":1,"startDate":"2020-06-14T22:00:00.000+00:00","endDate":"2020-06-15T09:00:00.000+00:00","priceList":3,"productId":35455,"priority":1,"price":30.5,"curr":"EUR","_links":{"self":{"href":"http://localhost/pricesByDate/3"},"pricesByDate":{"href":"http://localhost/pricesByDate"}}}

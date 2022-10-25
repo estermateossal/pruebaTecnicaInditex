@@ -13,9 +13,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class PriceByDateService implements IPriceByDateService {
 
-  private final PriceByDateRepository repository;
-
   private final PriceByDateModelMapper mapper;
+  private final PriceByDateRepository repository;
 
   public PriceByDateService(final PriceByDateRepository repository, final PriceByDateModelMapper mapper) {
     this.repository = repository;

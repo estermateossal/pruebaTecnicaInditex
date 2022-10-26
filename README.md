@@ -26,7 +26,11 @@ When the app starts, you can immediately interrogate it.
 > curl -v localhost:8080/pricesByDate/4
 
 ####GET PRICE BY DATE, PRODUCT_ID AND BRAND_ID
-> curl -v "localhost:8080/priceByDateProductAndBrand/?date=2020-06-14-16.00.00&productId=35455&brandId=1"
+> Test1: curl -v "localhost:8080/priceByDateProductAndBrand/?date=2020-06-14-10.00.00&productId=35455&brandId=1"
+> Test2: curl -v "localhost:8080/priceByDateProductAndBrand/?date=2020-06-14-16.00.00&productId=35455&brandId=1"
+> Test3: curl -v "localhost:8080/priceByDateProductAndBrand/?date=2020-06-14-21.00.00&productId=35455&brandId=1"
+> Test4: curl -v "localhost:8080/priceByDateProductAndBrand/?date=2020-06-15-10.00.00&productId=35455&brandId=1"
+> Test5: curl -v "localhost:8080/priceByDateProductAndBrand/?date=2020-06-16-21.00.00&productId=35455&brandId=1"
 
 ####POST
 > curl -X POST localhost:8080/pricesByDate -H 'Content-type:application/json' -d '{"id": 5, "brandId": 1, 

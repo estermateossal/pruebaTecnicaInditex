@@ -1,4 +1,4 @@
-package com.prueba.tecnica.inditex.service;
+package com.prueba.tecnica.inditex.service.impl;
 
 import com.prueba.tecnica.inditex.dto.PriceByDateDTO;
 import com.prueba.tecnica.inditex.model.PriceByDateModel;
@@ -8,6 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
+
+import com.prueba.tecnica.inditex.service.IPriceByDateService;
 import org.springframework.stereotype.Service;
 
 @Service
